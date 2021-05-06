@@ -8,7 +8,7 @@ import networkx as nx
 import unittest
 
 from lib.graph import flatten, loop_graph
-from cc import availability, sssp_conn, any_conn
+from cc import availability, sssp_conn_single, any_conn
 
 
 class GraphTest(unittest.TestCase):
@@ -41,7 +41,10 @@ class TestSSSP(GraphTest):
         edges = n * (n - 1) / 2
         if edges != g.number_of_edges():
             raise Exception("fix number of edges for complete graphs")
-        paths = nx.single_source_shortest_path(g, g.nodes()[0])
+        
+        paths = nx.single_source_shortest_path(g, list(g.nodes())[0])
+        print("===========path")
+        print(paths)
         used = flatten(paths)
         sssp_edges = used.number_of_edges()
         nodes = g.number_of_nodes()
@@ -61,8 +64,8 @@ class TestSSSP(GraphTest):
             0.1: 0.933333333333,
             0.2: 0.866666666666
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
-            self.run_complete_test(3, link_fail, 0, 1, sssp_conn, uptime)
+        for link_fail, uptime in hard_coded_uptimes.items():
+            self.run_complete_test(3, link_fail, 0, 1, sssp_conn_single, uptime)
 
     def test_link_complete_quad_onefail(self):
         # 6 links can fail.
@@ -74,13 +77,13 @@ class TestSSSP(GraphTest):
             0.1: 0.925,
             0.2: 0.85
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
-            self.run_complete_test(4, link_fail, 0, 1, sssp_conn, uptime)
+        for link_fail, uptime in hard_coded_uptimes.items():
+            self.run_complete_test(4, link_fail, 0, 1, sssp_conn_single, uptime)
 
     def test_link_complete_various_onefail(self):
         for n in range(3, 10):
             for link_fail in (0.01, 0.02):
-                self.run_complete_test(n, link_fail, 0, 1, sssp_conn)
+                self.run_complete_test(n, link_fail, 0, 1, sssp_conn_single)
 
     def calc_star_uptime(self, n, link_fail):
         '''Calc star uptime.
@@ -119,7 +122,7 @@ class TestSSSP(GraphTest):
         # if hard-coded "test bootstrap uptime" defined, verify w/eqn.
         if hard_coded_uptime:
             self.assertAlmostEqual(exp_uptime, hard_coded_uptime)
-        self.run_test(g, link_fail, node_fail, max_fail, sssp_conn, exp_uptime)
+        self.run_test(g, link_fail, node_fail, max_fail, sssp_conn_single, exp_uptime)
 
     def test_link_star_4_onefail(self):
         # When controller is along edge (3/4 of the time):
@@ -140,7 +143,7 @@ class TestSSSP(GraphTest):
         hard_coded_uptimes = {
             0.1: .8875,
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
+        for link_fail, uptime in hard_coded_uptimes.items():
             self.run_star_test(4, link_fail, 0, 1, uptime)
 
     def test_link_star_various_onefail(self):
@@ -182,13 +185,13 @@ class TestSSSP(GraphTest):
         # if hard-coded "test bootstrap uptime" defined, verify w/eqn.
         if hard_coded_uptime:
             self.assertAlmostEqual(exp_uptime, hard_coded_uptime)
-        self.run_test(g, link_fail, node_fail, max_fail, sssp_conn, exp_uptime)
+        self.run_test(g, link_fail, node_fail, max_fail, sssp_conn_single, exp_uptime)
 
     def test_link_line_2_onefail(self):
         hard_coded_uptimes = {
             0.1: 0.95,
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
+        for link_fail, uptime in hard_coded_uptimes.items():
             self.run_line_test(2, link_fail, 0, 1, uptime)
 
     def test_link_line_3_onefail(self):
@@ -211,7 +214,7 @@ class TestSSSP(GraphTest):
         hard_coded_uptimes = {
             0.1: 0.911111111111111,
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
+        for link_fail, uptime in hard_coded_uptimes.items():
             self.run_line_test(3, link_fail, 0, 1, uptime)
 
     def test_link_line_various_onefail(self):
@@ -224,7 +227,7 @@ class TestSSSP(GraphTest):
         g = loop_graph(n)
         node_fail = 0
         # if hard-coded "test bootstrap uptime" defined, verify w/eqn.
-        self.run_test(g, link_fail, node_fail, max_fail, sssp_conn, hard_coded_uptime)
+        self.run_test(g, link_fail, node_fail, max_fail, sssp_conn_single, hard_coded_uptime)
 
     def test_link_loop_3_onefail(self):
         # All cases are equal.
@@ -237,7 +240,7 @@ class TestSSSP(GraphTest):
         hard_coded_uptimes = {
             0.1: 0.93333333333333
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
+        for link_fail, uptime in hard_coded_uptimes.items():
             self.run_loop_test(3, link_fail, 0, 1, uptime)
 
 class TestAny(GraphTest):
@@ -253,7 +256,7 @@ class TestAny(GraphTest):
             0.1: 1.0,
             0.2: 1.0
         }
-        for link_fail, uptime in hard_coded_uptimes.iteritems():
+        for link_fail, uptime in hard_coded_uptimes.items():
             self.run_complete_test(3, link_fail, 0, 1, any_conn, uptime)
 
     def test_any_link_complete_various_onefail(self):
