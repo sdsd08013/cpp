@@ -49,7 +49,8 @@ def sssp_conn_single(g, controller_node, link_fail_prob):
             disconnected = 0
             for sw in g.nodes():
                 path_graph = nx.Graph()
-                path_graph.add_path(paths[sw])
+                #path_graph.add_path(paths[sw])
+                nx.add_path(path_graph, paths[sw])
                 #lg.debug("path graph edges: %s" % path_graph.edges())
                 if path_graph.has_edge(failed_edge[0], failed_edge[1]):
                     lg.debug("disconnected sw: %s" % sw)

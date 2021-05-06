@@ -43,8 +43,6 @@ class TestSSSP(GraphTest):
             raise Exception("fix number of edges for complete graphs")
         
         paths = nx.single_source_shortest_path(g, list(g.nodes())[0])
-        print("===========path")
-        print(paths)
         used = flatten(paths)
         sssp_edges = used.number_of_edges()
         nodes = g.number_of_nodes()
@@ -94,7 +92,7 @@ class TestSSSP(GraphTest):
         # Node 0 is the center of the star.
         edges = g.number_of_edges()
         nodes = g.number_of_nodes()
-        paths = nx.single_source_shortest_path(g, g.nodes()[1])
+        paths = nx.single_source_shortest_path(g, list(g.nodes())[1])
         used = flatten(paths)
         sssp_edges = used.number_of_edges()
         if sssp_edges != g.number_of_edges():

@@ -23,7 +23,8 @@ def flatten(paths):
     lg.debug("paths: %s" % paths)
     for path in paths.values():
         lg.debug("flattening path: %s" % path)
-        used.add_path(path)
+        nx.add_path(used, path)
+        #used.add_path(path)
     return used
 
 
