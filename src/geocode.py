@@ -28,7 +28,7 @@ def get_lat_long(location, appid = 'faypaS6k'):
     })
 
     response, content = http.request(url + params, 'GET')
-    print location, response, content
+    print(location+response+content)
     content_json = json.loads(content)
     resultset = content_json["ResultSet"]
 

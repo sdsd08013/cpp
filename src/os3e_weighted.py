@@ -35,10 +35,10 @@ def OS3EWeightedGraph():
 
     # Get locations
     if os.path.isfile(LATLONG_FILE):
-        print "Using existing lat/long file"
+        print("Using existing lat/long file")
         data = read_json_file(LATLONG_FILE)
     else:
-        print "Generating new lat/long file"
+        print("Generating new lat/long file")
         for n in g.nodes():
             data[n] = get_lat_long(n)
         write_json_file(LATLONG_FILE, data)

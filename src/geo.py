@@ -112,8 +112,8 @@ class Parser:
 
 		try:
 			self.patterns[name] = ("(?:"+pattern+")") % self.patterns
-		except KeyError,e:
-			raise Exception, "Unknown pattern name: %s" % str(e)
+		except KeyError as e:
+			raise Exception("Unknown pattern name: %s" % str(e))
 
 	def parse(self,pattern_name,text):
 		""" Parses 'text' with pattern 'pattern_name' and returns parse tree """

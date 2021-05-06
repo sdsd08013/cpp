@@ -605,7 +605,7 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
     for combo_size in sorted(controllers):
         # compute best location(s) for i controllers.
 
-        print "** combo size: %s" % combo_size
+        print("** combo size: %s" % combo_size)
 
         # Initialize metric tracking data
         metric_data = init_metric_data(metrics, median)
@@ -614,15 +614,15 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
         if multiprocess and COARSE:
 
             #all_combos = combinations(g.nodes(), combo_size)
-            print "dispatch each thread"
+            print("dispatch each thread")
             results_async = []
             for p in range(processes):
                 result_async = pool.apply_async(handle_combos_all, (p, processes, combo_size, metrics, median, write_combos, write_dist, point_id))
                 results_async.append(result_async)
                 # handle_combos returns a [metric_data, distribution] result.
 
-            # Wait for results from each thread
-            print "collecting and merging results"
+            # Wait for results from each thread)
+            print("collecting and merging results")
             results = []
             for r in results_async:
                 metric_data_in, distribution_in = r.get()
@@ -699,10 +699,10 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
             this_metric['highest_combo'] = list(this_metric['highest_combo'])
 
             if PRINT_VERBOSE:
-                print "\t" + "%s" % metric
+                print("\t" + "%s" % metric)
                 for key in sorted(this_metric.keys()):
                     if key != 'values':
-                        print "\t\t%s: %s" % (key, this_metric[key])
+                        print("\t\t%s: %s" % (key, this_metric[key]))
 
         data['data'][unicode(combo_size)] = {}
         group_data = data['data'][unicode(combo_size)]
@@ -719,9 +719,9 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
     # Even if it's just a slow GC performance bug and not a correctness one,
     # it helps run the code on smaller VMs and should help performance a bit.
     if multiprocess:
-        print "terminating pool"
+        print("terminating pool")
         pool.terminate()
-        print "joining pool"
+        print("joining pool")
         pool.join()
 
 
@@ -752,7 +752,7 @@ def run_best_n(data, g, apsp, n, weighted):
             # convert to array to get past this issue.
             combo = [c for c in combo]
             if n < 5:
-                print "random combo: %s" % combo
+                print("random combo: %s" % combo)
 
             path_len_total = get_total_path_len(g, combo, apsp, weighted)
 
@@ -791,7 +791,7 @@ def run_worst_n(data, g, apsp, n, weighted):
             # convert to array to get past this issue.
             combo = [c for c in combo]
             if n < 5:
-                print "random combo: %s" % combo
+                print("random combo: %s" % combo)
 
             path_len_total = get_total_path_len(g, combo, apsp, weighted)
 
@@ -939,13 +939,13 @@ def run_alg(data, g, alg, param_name, iter_fcn, apsp, weighted,
             }
         }
 
-        print "** combo size: %s" % combo_size
-        print "\t" + alg
-        print "\t\t%s: %s" % (param_name, path_len)
-        print "\t\tduration: %s" % duration
-        print "\t\tcombo: %s" % soln
-        print "\t\tratio: %s" % ratio
-        print "\t\tpath_len: %s" % path_len
+        print("** combo size: %s" % combo_size)
+        print("\t" + alg)
+        print("\t\t%s: %s" % (param_name, path_len))
+        print("\t\tduration: %s" % duration)
+        print("\t\tcombo: %s" % soln)
+        print("\t\tratio: %s" % ratio)
+        print("\t\tpath_len: %s" % path_len)
 
         if unicode(combo_size) not in data:
             data[unicode(combo_size)] = {}
