@@ -35,7 +35,7 @@ def closest_controllers(g, controllers, apsp):
         closest_controller = None
         shortest_path_len = BIG
         for c in controllers:
-            path_len = apsp[n][c]
+            path_len = dict(apsp)[n][c]
             if path_len < shortest_path_len:
                 closest_controller = c
                 shortest_path_len = path_len
@@ -146,7 +146,7 @@ def fraction_within_latency(g, combo, apsp, lat_bound, weighted = False):
     @return fraction_within_latency
     '''
     closest = closest_controllers(g, combo, apsp)
-    latencies = [apsp[n][c] for n, c in closest.iteritems()]
+    latencies = [apsp[n][c] for n, c in closest.items()]
     return sum([l <= lat_bound for l in latencies]) / float(g.number_of_nodes())
 
 
@@ -284,11 +284,18 @@ def connectivity_sssp(g, combo, apsp, apsp_paths, weighted, failed_links):
     @return connectivity: fraction of connected switches, on average
     '''
     connected = 0  # Number of connected switches
+
     for n in g.nodes():
         # Find best controller set
         closest_controllers = set([])
         closest_controller_dist = BIG
         for c in combo:
+            # print("==========c")
+            # print(c)
+            # print("==========apsp[n]")
+            # print(apsp[n])
+            # print("==========dict(apsp[n])[c]")
+            # print(dict(apsp[n])[c])
             dist = apsp[n][c]
             if dist < closest_controller_dist:
                 closest_controller_dist = dist
@@ -342,10 +349,18 @@ def availability_one_combo(g, combo, apsp, apsp_paths, weighted,
     coverages = {}  # Coverage per # failures
     assert g
 
+    print("max_failures")
+    print(max_failures)
+    print("links")
+    print(g.number_of_edges())
     for failures in range(max_failures + 1):
+        print("failures")
+        print(failures)
         availabilities[failures] = 0.0
         coverages[failures] = 0.0
         for failed_links in link_failure_combinations(g, failures):
+            print("failed_links")
+            print(failed_links.__class__)
             links = g.number_of_edges()
             if weighted:
                 state_prob = 1.0
@@ -360,13 +375,26 @@ def availability_one_combo(g, combo, apsp, apsp_paths, weighted,
             else:
                 bad_links = len(failed_links)
                 good_links = links - bad_links
-                link_success_prob = (1.0 - link_fail_prob)
+                link_success_prob = (1.0 - link_fail_prob) # 1-0.01=0.99
+                print("link_success_prob")
+                print(link_success_prob)
+                print("good_links")
+                print(good_links)
                 state_prob = ((link_success_prob ** good_links) *
                               (link_fail_prob ** bad_links))
+                print("link_fail_prob")
+                print(link_fail_prob)
+                print("bad_links")
+                print(bad_links)
+            
+            print("state_prob")
+            print(state_prob)
             coverages[failures] += state_prob
             conn = connectivity_sssp(g, combo, apsp, apsp_paths, weighted, failed_links)
             availabilities[failures] += state_prob * conn
 
+    print("coverage")
+    print(coverages.values())
     availability = sum(availabilities.values())
     coverage = sum(coverages.values())
     return availability, coverage

@@ -49,8 +49,8 @@ class AvailabilityTest(unittest.TestCase):
         '''Validate coverage and availability are reasonable.'''
         link_fail_prob = 0.01
         g = OS3EGraph()
-        apsp = nx.all_pairs_shortest_path_length(g)
-        apsp_paths = nx.all_pairs_shortest_path(g)
+        apsp = dict(nx.all_pairs_shortest_path_length(g))
+        apsp_paths = dict(nx.all_pairs_shortest_path(g))
         combos = [["Sunnyvale, CA", "Boston"],
                   ["Portland"],
                   ["Sunnyvale, CA", "Salt Lake City"],
@@ -60,23 +60,23 @@ class AvailabilityTest(unittest.TestCase):
 
         '''
         34 nodes
-        41 edges
+        42 edges
         pfail = 0.01
         p(good) =
-            1 * p(success) * p(success) * ... 41 = 0.99 ** 41 =
+            1 * p(success) * p(success) * ... 42 = 0.99 ** 42 =
             0.66228204098398347
         p(1 fail) =
-            (41 choose 1) * (p(success) ** (41 - 1)) * p(fail) =
-            41 * (0.99 ** 40) * 0.01 =
-            0.27427842101356892
+            (42 choose 1) * (p(success) ** (42 - 1)) * p(fail) =
+            42 * (0.99 ** 41) * 0.01 =
+            0.27815845721
         p(2 fail) =
-            (41 choose 2) * (p(success) ** (41 - 2)) * (p(fail) ** 2) =
-            820 * (0.99 ** 39) * (0.01 ** 2) =
-            0.055409782022943221
+            (42 choose 2) * (p(success) ** (42 - 2)) * (p(fail) ** 2) =
+            861 * (0.99 ** 40) * (0.01 ** 2) =
+            0.05759846841
         p(3 fail) =
-            (41 choose 3) * (p(success) ** (41 - 2)) * (p(fail) ** 2) =
-            10660 * (0.99 ** 38) * (0.01 ** 3) =
-            0.0072760319828107265
+            (42 choose 3) * (p(success) ** (42 - 3)) * (p(fail) ** 3) =
+            22960 * (0.99 ** 39) * (0.01 ** 3) =
+            0.01551473896
 
         sum (0..1 failures) = 
             0.66228204098398347 + 0.27427842101356892 =
@@ -97,21 +97,22 @@ class AvailabilityTest(unittest.TestCase):
         error bar = 0.00075
         '''
         exp_coverage = {
-            0: 0.66228204098398347,
-            1: 0.27427842101356892,
-            2: 0.055409782022943221,
-            3: 0.0072760319828107265
+            0: 0.65565922057,
+            1: 0.27815845721,
+            2: 0.05759846841,
+            3: 0.01551473896
         }
 
         def get_coverage(f):
             '''Return expected coverage for given number of failures.'''
-            return sum([v for k, v in exp_coverage.iteritems() if k <= f])
+            return sum([v for k, v in exp_coverage.items() if k <= f])
 
         for combo in combos:
             for max_failures in range(3):
                 a, c = availability_one_combo(g, combo, apsp, apsp_paths,
                                               weighted, link_fail_prob,
                                               max_failures)
+
                 self.assertTrue(a < 1.0)
                 self.assertTrue(c < 1.0)
                 self.assertAlmostEqual(get_coverage(max_failures), c)
@@ -121,8 +122,9 @@ class AvailabilityTest(unittest.TestCase):
         link_fail_prob = 0.01
         g = OS3EGraph()
         g_unit = set_unit_weights(g.copy())
-        apsp = nx.all_pairs_shortest_path_length(g)
-        apsp_paths = nx.all_pairs_shortest_path(g)
+        apsp = dict(nx.all_pairs_shortest_path_length(g))
+        apsp_paths = dict(nx.all_pairs_shortest_path(g))
+
         combos = [["Sunnyvale, CA", "Boston"],
                   ["Portland"],
                   ["Sunnyvale, CA", "Salt Lake City"],
@@ -130,7 +132,7 @@ class AvailabilityTest(unittest.TestCase):
                   ["Seattle", "Portland"]]     
         for combo in combos:
             for max_failures in range(1, 2):
-                a, c = availability_one_combo(g, combo, apsp, apsp_paths,
+                a, c = availability_one_combo(g, combo, dict(apsp), apsp_paths,
                     False, link_fail_prob, max_failures)
                 a_u, c_u = availability_one_combo(g_unit, combo, apsp,
                     apsp_paths, True, link_fail_prob, max_failures)
@@ -144,8 +146,8 @@ class LatencyTest(unittest.TestCase):
         '''Ensure fraction of nodes within bound is reasonable.'''
         g = OS3EGraph()
         g_unit = set_unit_weights(g.copy())
-        apsp = nx.all_pairs_shortest_path_length(g)
-        apsp_paths = nx.all_pairs_shortest_path(g)
+        apsp = dict(nx.all_pairs_shortest_path_length(g))
+        apsp_paths = dict(nx.all_pairs_shortest_path(g))
         path_lens = []
         for a in apsp:
             for b in apsp:
