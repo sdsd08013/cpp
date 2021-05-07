@@ -38,7 +38,7 @@ def loop_graph(n):
 
 def set_unit_weights(g):
     '''Set edge weights for NetworkX graph to 1 & return.'''
-    set_weights(g, 1.0)
+    return set_weights(g, 1.0)
 
 
 def set_weights(g, weight):
