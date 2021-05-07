@@ -88,7 +88,7 @@ def get_total_path_len(g, controllers, apsp, weighted = False):
     @return path_len_total: total of path lengths
     '''
     closest = closest_controllers(g, controllers, apsp)
-    return sum([apsp[n][c] for n, c in closest.iteritems()])
+    return sum([apsp[n][c] for n, c in closest.items()])
 
 
 def get_total_path_len_2(g, controllers, apsp, weighted = False):
@@ -117,7 +117,7 @@ def worst_case_latency(g, controllers, apsp, weighted = False):
     @return worst_case_latency
     '''
     closest = closest_controllers(g, controllers, apsp)
-    return max([apsp[n][c] for n, c in closest.iteritems()])
+    return max([apsp[n][c] for n, c in closest.items()])
 
 
 def worst_case_latency_2(g, controllers, apsp, weighted = False):
@@ -133,7 +133,7 @@ def worst_case_latency_2(g, controllers, apsp, weighted = False):
         return worst_case_latency(g, controllers, apsp, weighted)
     else:
         closest_2 = closest_controllers_2(g, controllers, apsp)
-        return max([apsp[n][c] for n, c in closest_2.iteritems()])
+        return max([apsp[n][c] for n, c in closest_2.items()])
 
 
 def fraction_within_latency(g, combo, apsp, lat_bound, weighted = False):
@@ -503,7 +503,7 @@ def handle_combos(combos, metrics, median, write_combos, write_dist, point_id):
     return [metric_data, distribution]
 
 
-def handle_combos_all(process_index, processes, combo_size, metrics, median, write_combos, write_dist, point_id):
+def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_params, process_index, processes, combo_size, metrics, median, write_combos, write_dist, point_id):
     '''Handle processing for an even fraction of all combinations.
 
     Returns list with two (merged) elements:
@@ -600,8 +600,8 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
     
     g_metrics = metrics
     g_g = g
-    g_apsp = apsp
-    g_apsp_paths = apsp_paths
+    g_apsp = dict(apsp)
+    g_apsp_paths = dict(apsp_paths)
     g_weighted = weighted
     g_extra_params = extra_params
 
@@ -625,7 +625,7 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
             print("dispatch each thread")
             results_async = []
             for p in range(processes):
-                result_async = pool.apply_async(handle_combos_all, (p, processes, combo_size, metrics, median, write_combos, write_dist, point_id))
+                result_async = pool.apply_async(handle_combos_all, (g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_params, p, processes, combo_size, metrics, median, write_combos, write_dist, point_id))
                 results_async.append(result_async)
                 # handle_combos returns a [metric_data, distribution] result.
 
@@ -712,8 +712,8 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
                     if key != 'values':
                         print("\t\t%s: %s" % (key, this_metric[key]))
 
-        data['data'][unicode(combo_size)] = {}
-        group_data = data['data'][unicode(combo_size)]
+        data['data'][str(combo_size)] = {}
+        group_data = data['data'][str(combo_size)]
         for metric in metrics:
             group_data[metric] = metric_data[metric]
         group_data['distribution'] = distribution
@@ -955,6 +955,6 @@ def run_alg(data, g, alg, param_name, iter_fcn, apsp, weighted,
         print("\t\tratio: %s" % ratio)
         print("\t\tpath_len: %s" % path_len)
 
-        if unicode(combo_size) not in data:
-            data[unicode(combo_size)] = {}
-        data[unicode(combo_size)].update(json_to_add)
+        if str(combo_size) not in data:
+            data[str(combo_size)] = {}
+        data[str(combo_size)].update(json_to_add)

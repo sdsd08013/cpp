@@ -9,7 +9,7 @@ def do_cloud(options, stats, write_filepath, ext = None):
 
     assert len(options.metrics) == 2
     x_metric, y_metric = options.metrics
-    print "reformatting data..."
+    print("reformatting data...")
     metrics = [x_metric, y_metric]
     data = {}
     for i, g in enumerate(stats['group']):
@@ -17,7 +17,7 @@ def do_cloud(options, stats, write_filepath, ext = None):
             break
         data[g] = [d for d in stats['data'][g]["distribution"]]
 
-    print "plotting point cloud"
+    print("plotting point cloud")
 
     if not write_filepath:
         write_filepath = get_output_filepath(options.input)
@@ -47,6 +47,6 @@ def do_cloud(options, stats, write_filepath, ext = None):
 
 if __name__ == "__main__":
     options = parse_args()
-    print "loading JSON data..."
+    print("loading JSON data...")
     stats = plot.load_stats(options)
     do_cloud(options, stats, None)

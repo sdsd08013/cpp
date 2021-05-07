@@ -10,8 +10,8 @@ DEF_MAX = None
 DEF_WEIGHTED = True
 
 # Metric to plot
-METRICS = metrics.METRICS
-DEF_METRIC = metrics.METRICS[0]
+METRICS = list(metrics.METRICS)
+DEF_METRIC = list(metrics.METRICS)[0]
 
 DEF_INPUT_DIR = 'data_out'
 DEF_OUTPUT_DIR = DEF_INPUT_DIR
@@ -32,9 +32,9 @@ DPI = 300
 
 def parse_args():
     opts = OptionParser()
-    print "entered arg parsing"
+    print("entered arg parsing")
     import sys
-    print sys.argv
+    print(sys.argv)
 
     # Topology selection
     opts.add_option("--topo", type = 'str', default = DEF_TOPO,
@@ -66,6 +66,8 @@ def parse_args():
     opts.add_option("--gen_1ctrl_table",action = "store_true",
                     default = False, help = "generate LaTeX one-ctrl table?")
 
+    print("choices")
+    print(METRICS)
     # Metric selection
     opts.add_option("--metric",
                     default = None,
@@ -181,13 +183,13 @@ def parse_args():
     else:
         options.operations = DEF_OPERATIONS
 
-    print "options.plot_list: %s" % options.plot_list
+    print("options.plot_list: %s" % options.plot_list)
     if options.plot_list:
         options.plots = options.plot_list.split(',')
     else:
         options.plots = None
 
-    print "options.plot: %s" % options.plots
+    print("options.plot: %s" % options.plots)
 
     if options.cdf_plot_list:
         options.cdf_plots = options.cdf_plot_list.split(',')

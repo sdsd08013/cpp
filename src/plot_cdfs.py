@@ -14,14 +14,14 @@ def do_cdfs(options, stats, write_filepath):
         write_filepath = get_output_filepath(options.input)
 
     for metric in options.metrics:
-        print "reformatting data..."
+        print("reformatting data...")
         data = {}
         for i, g in enumerate(stats['group']):
             if options.max and i >= options.max:
                 break
             data[g] = [d[metric] for d in stats['data'][g]["distribution"]]
 
-        print "plotting CDFs"
+        print("plotting CDFs")
         xmax = round(math.ceil(max(data[stats['group'][0]])))
         axis_limits = [0, xmax, 0, 1]
         if options.minx:
@@ -41,6 +41,6 @@ def do_cdfs(options, stats, write_filepath):
 
 if __name__ == "__main__":
     options = parse_args()
-    print "loading JSON data..."
+    print("loading JSON data...")
     stats = plot.load_stats(options)
     do_cdfs(options, stats, None)

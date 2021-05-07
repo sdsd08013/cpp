@@ -68,7 +68,7 @@ def get_extra_params(g):
 def do_metrics(options, topo, g):
     '''Compute the metrics for a single topology.'''
 
-    print "computing metricss for topo: %s" % topo
+    print("computing metricss for topo: %s" % topo)
     controllers = get_controllers(g, options)
     filename = get_filename(topo, options, controllers)
 
@@ -87,7 +87,7 @@ def do_metrics(options, topo, g):
                                options.write_combos, extra_params, options.processes,
                                options.multiprocess, options.chunksize, options.median)
         total_duration = time.time() - start
-        print "%0.6f" % total_duration
+        print("%0.6f" % total_duration)
 
     if not options.dist_only:
         metrics.run_greedy_informed(data, g, apsp, options.weighted)
@@ -97,7 +97,7 @@ def do_metrics(options, topo, g):
             metrics.run_best_n(data, g, apsp, i, options.weighted)
             metrics.run_worst_n(data, g, apsp, i, options.weighted)
 
-    print "*******************************************************************"
+    print("*******************************************************************")
 
     # Ignore the actual combinations in CSV outputs as well as single points.
     exclude = ["distribution", "metric", "group", "id"]

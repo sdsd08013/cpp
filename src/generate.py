@@ -20,6 +20,8 @@ if __name__ == "__main__":
 
     global options
     options = plot.parse_args()
+    print("========options")
+    print(options)
 
     def do_all(name, g, i, t, data):
         global options
@@ -33,6 +35,8 @@ if __name__ == "__main__":
             exp_filename = metrics.get_filename(name, options, controllers)
             if not os.path.exists(exp_filename + '.json'):
                 raise Exception("invalid file path: %s" % exp_filename)
+            print("exp_filename")
+            print(exp_filename)
             input_file = open(exp_filename + '.json', 'r')
             stats = json.load(input_file)
             filename = exp_filename.replace('data_out', 'data_vis')
@@ -58,7 +62,7 @@ if __name__ == "__main__":
         if not options.max == None and i >= options.max:
             break
 
-        print "topo %s of %s: %s" % (i + 1, t, topo)
+        print("topo %s of %s: %s" % (i + 1, t, topo))
         g, usable, note = get_topo_graph(topo)
         cc = nx.number_connected_components(g)
         controllers = metrics.get_controllers(g, options)
@@ -68,24 +72,26 @@ if __name__ == "__main__":
             raise Exception("WTF?  null graph: %s" % topo)
 
         if options.topos_blacklist and topo in options.topos_blacklist:
-            print "ignoring topo %s - in blacklist" % topo
+            print("ignoring topo %s - in blacklist" % topo)
             ignored.append(topo)
         elif cc != 1:  # Ignore multiple-CC topos, which confuse APSP calcs
-            print "ignoring topo, cc != 1: %s" % topo
+            print("ignoring topo, cc != 1: %s" % topo)
             ignored.append(topo)
         elif g.number_of_nodes() < len(controllers):
-            print "skipping topo, c >= n: %s" % topo
+            print("skipping topo, c >= n: %s" % topo)
             ignored.append(topo)
         elif not options.force and os.path.exists(exp_filename + '.json'):
             # Don't bother doing work if our metrics are already there.
-            print "skipping already-analyzed topo: %s" % topo
+            print("skipping already-analyzed topo: %s" % topo)
             ignored.append(topo)
         elif not has_weights(g):
             ignored.append(topo)
-            print "no weights for %s, skipping" % topo
+            print("no weights for %s, skipping" % topo)
         else:
+            print("=========topo")
+            print(topo)
             do_all(topo, g, 1, 1, None)
             successes.append(topo)
 
-    print "successes: %s of %s: %s" % (len(successes), t, successes)
-    print "ignored: %s of %s: %s" % (len(ignored), t, ignored)
+    print("successes: %s of %s: %s" % (len(successes), t, successes))
+    print("ignored: %s of %s: %s" % (len(ignored), t, ignored))

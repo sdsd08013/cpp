@@ -4,10 +4,10 @@ EXT=pdf
 CS='4'
 MP='--no-multiprocess'
 OPS='--operation_list pareto'
-TOPOS='--topo Aarnet'
+TOPOS='--topo os3e'
 FORCE='--force'
 
 for C in ${CS}
 do
-  ./generate.py ${TOPOS} --from_start ${C} --lat_metrics -w -e ${EXT} ${FORCE} ${MP} ${OPS}
+  python3 ./generate.py ${TOPOS} --from_start ${C} --lat_metrics -w -e ${EXT} ${FORCE} ${MP} ${OPS}
 done

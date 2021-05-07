@@ -10,14 +10,17 @@ def do_pareto(options, stats, write_filepath):
 
     assert len(options.metrics) == 2
     x_metric, y_metric = options.metrics
-    print "reformatting data..."
+    print("reformatting data...")
     data = {}
     for i, g in enumerate(stats['group']):
         if options.max and i >= options.max:
             break
         data[g] = [d for d in stats['data'][g]["distribution"]]
 
-    print "plotting point pareto"
+    print("data")
+    print(data)
+
+    print("plotting point pareto")
     if not write_filepath:
         write_filepath = get_output_filepath(options.input)
     write_filepath += '_pareto_' + ','.join(options.metrics)
@@ -63,6 +66,6 @@ def do_pareto(options, stats, write_filepath):
 
 if __name__ == "__main__":
     options = parse_args()
-    print "loading JSON data..."
+    print("loading JSON data...")
     stats = plot.load_stats(options)
     do_pareto(options, stats, None)

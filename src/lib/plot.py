@@ -311,7 +311,7 @@ def ranges_multiple(stats, metric, aspects, aspect_colors, aspect_fcns,
         filepath = write_filepath + '.' + ext
         mkdir_p(os.path.dirname(filepath))
         fig.savefig(filepath, dpi = DPI)
-        print "wrote file to %s" % filepath
+        print("wrote file to %s" % filepath)
     else:
         #pylab.show()
         pass
@@ -412,6 +412,8 @@ def pareto(data, colors, axes, xscale, yscale,
 
     pd, datanames = pareto_data_raw(data, x_metric, y_metric, normalize)
 
+    print("=======pd")
+    print(pd)
     lines = []
     for i, k in enumerate(sorted(data.keys())):
         pareto = pd[i]
@@ -466,7 +468,7 @@ def pareto(data, colors, axes, xscale, yscale,
         filepath = write_filepath + '.' + ext
         mkdir_p(os.path.dirname(filepath))
         fig.savefig(filepath, dpi = DPI)
-        print "wrote file to %s" % filepath
+        print("wrote file to %s" % filepath)
     clear_fig(fig)
 
 
@@ -512,7 +514,7 @@ def cloud(data, colors, axes, xscale, yscale,
         filepath = write_filepath + '.' + ext
         mkdir_p(os.path.dirname(filepath))
         fig.savefig(filepath, dpi = DPI)
-        print "wrote file to %s" % filepath
+        print("wrote file to %s" % filepath)
     else:
         pass
     clear_fig(fig)
@@ -589,7 +591,7 @@ def plot(ptype, data, colors, axes, label, xscale, yscale,
     if write:
         filepath = write_filepath + '.' + ext
         mkdir_p(os.path.dirname(filepath))
-        print "writing file to %s" % filepath
+        print("writing file to %s" % filepath)
         fig.savefig(filepath, dpi = DPI)
     else:
         #pylab.show()

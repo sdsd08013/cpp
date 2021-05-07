@@ -50,11 +50,11 @@ def ft_cost_fcn(g, d, m1, m2, graph):
     extra_params = None
     m1_opt_m1_value = d[m1]['lowest']
     m2_opt_m1_value = METRIC_FCNS[m1](graph, m2_opt_combo, apsp, apsp_paths, weighted, extra_params)
-    print "metric values for %s" % (m1)
-    print "  value for combo %s opt for %s: %s" % (m1_opt_combo, m1, m1_opt_m1_value)
-    print "  value for combo %s opt for %s: %s" % (m2_opt_combo, m2, m2_opt_m1_value)
+    print("metric values for %s" % (m1))
+    print("  value for combo %s opt for %s: %s" % (m1_opt_combo, m1, m1_opt_m1_value))
+    print("  value for combo %s opt for %s: %s" % (m2_opt_combo, m2, m2_opt_m1_value))
     value = divide_def0(m2_opt_m1_value, m1_opt_m1_value)
-    print "    return value of: %s for k = %s" % (value, g)
+    print("    return value of: %s for k = %s" % (value, g))
     return value
 
 def other_metric(metric):
@@ -178,7 +178,7 @@ def do_ranges(options, stats, write_filepath, topo_name):
         @param usable: boolean: locations on all nodes and connected?
         @param note: error or note about mods
     '''
-    print "generating topo for: %s" % topo_name
+    print("generating topo for: %s" % topo_name)
     graph, usable, note = get_topo_graph(topo_name)
     if not usable:
         raise Exception("unusable graph?")
@@ -229,7 +229,7 @@ def do_ranges(options, stats, write_filepath, topo_name):
 
 if __name__ == "__main__":
     options = parse_args()
-    print "loading JSON data..."
+    print("loading JSON data...")
     stats = plot.load_stats(options)
     topo_name = options.input.split('/')[1]
     do_ranges(options, stats, None, topo_name)

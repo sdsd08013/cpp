@@ -14,7 +14,7 @@ from os3e_weighted import OS3EWeightedGraph
 
 
 def has_weights(g):
-    e1 = g.edges()[0]
+    e1 = list(g.edges())[0]
     return 'weight' in g[e1[0]][e1[1]]
 
 def total_weight(g):
@@ -25,13 +25,13 @@ def total_weight(g):
 
 def has_all_locs(g):
     for n in g.nodes():
-        if 'Latitude' not in g.node[n] or 'Longitude' not in g.node[n]:
+        if 'Latitude' not in g.nodes[n] or 'Longitude' not in g.nodes[n]:
             return False
     return True
 
 def has_a_location(g):
     for n in g.nodes():
-        if 'Latitude' in g.node[n] and 'Longitude' in g.node[n]:
+        if 'Latitude' in g.nodes[n] and 'Longitude' in g.nodes[n]:
             return True
     return False
 
@@ -39,7 +39,7 @@ def num_geo_locations(g):
     num_in = 0
     num_out = 0
     for n in g.nodes():
-        if 'Latitude' in g.node[n] and 'Longitude' in g.node[n]:
+        if 'Latitude' in g.nodes[n] and 'Longitude' in g.nodes[n]:
             num_in += 1
         else:
             num_out += 1
@@ -51,9 +51,9 @@ def lat_long_pair(node):
 
 def dist_in_miles(g, src, dst):
     '''Given a NetworkX graph data and node names, compute mileage between.'''
-    src_pair = lat_long_pair(g.node[src])
+    src_pair = lat_long_pair(g.nodes[src])
     src_loc = geo.xyz(src_pair[0], src_pair[1])
-    dst_pair = lat_long_pair(g.node[dst])
+    dst_pair = lat_long_pair(g.nodes[dst])
     dst_loc = geo.xyz(dst_pair[0], dst_pair[1])
     return geo.distance(src_loc, dst_loc) * METERS_TO_MILES
 
@@ -157,9 +157,9 @@ def known_no_loc(topo):
 
 
 def node_is_internal(g, n):
-    if 'Internal' not in g.node[n]:
+    if 'Internal' not in g.nodes[n]:
         return True
-    elif 'Internal' in g.node[n] and g.node[n]["Internal"] != 0:
+    elif 'Internal' in g.nodes[n] and g.nodes[n]["Internal"] != 0:
         return True
     else:
         return False
@@ -168,8 +168,8 @@ def node_is_internal(g, n):
 def missing_locs_are_external(g):
     '''Return True if each node missing a location is external.'''
     for n in g.nodes():
-        if ('Latitude' not in g.node[n] or
-            'Longitude' not in g.node[n]):
+        if ('Latitude' not in g.nodes[n] or
+            'Longitude' not in g.nodes[n]):
             if node_is_internal(g, n):
                 return False
     return True
@@ -178,7 +178,7 @@ def missing_locs_are_external(g):
 def remove_external_nodes(g):
     for n in g.nodes():
         if not node_is_internal(g, n):
-            print "removing node %s: %s" % (n, g.node[n])
+            print("removing node %s: %s" % (n, g.nodes[n]))
             g.remove_node(n)
 
 
@@ -188,7 +188,7 @@ def attach_weights(g):
             
 
 def node_is_hyperedge(g, n):
-    if 'hyperedge' in g.node[n] and g.node[n]['hyperedge'] == 1:
+    if 'hyperedge' in g.nodes[n] and g.nodes[n]['hyperedge'] == 1:
         return True
     else:
         return False
@@ -197,8 +197,8 @@ def node_is_hyperedge(g, n):
 def missing_locs_are_hyperedges(g):
     '''Return True if each node missing a location is marked a hyperedge.'''
     for n in g.nodes():
-        if ('Latitude' not in g.node[n] or
-            'Longitude' not in g.node[n]):
+        if ('Latitude' not in g.nodes[n] or
+            'Longitude' not in g.nodes[n]):
             if not node_is_hyperedge(g, n):
                 return False
     return True
@@ -209,8 +209,8 @@ def missing_locs_are_external_or_hyperedges(g):
     or external
     '''
     for n in g.nodes():
-        if ('Latitude' not in g.node[n] or
-            'Longitude' not in g.node[n]):
+        if ('Latitude' not in g.nodes[n] or
+            'Longitude' not in g.nodes[n]):
             if not node_is_hyperedge(g, n) and node_is_internal(g, n):
                 return False
     return True
@@ -237,7 +237,7 @@ def import_zoo_graph(topo):
     # latency, but add complications when debugging.
     g = nx.Graph(nx.read_gml(filename))
     cc = nx.connected_components(g)
-    if len(cc) != 1:
+    if len(list(cc)) != 1:
         if ok_disconn(topo):
             # Remove disconnected components and continue
             # Do a pass to find the largest CC
@@ -256,7 +256,7 @@ def import_zoo_graph(topo):
             return None, False, "Unknown disconnected topology"
 
     cc = nx.connected_components(g)
-    assert len(cc) == 1
+    assert len(list(cc)) == 1
 
     if not has_a_location(g):
         if known_no_loc(topo):
@@ -265,7 +265,7 @@ def import_zoo_graph(topo):
             return None, False, "Unknown no-weight topo"
 
     if g.number_of_nodes() <= 9:
-        print "********%s%s" % (topo, g.number_of_nodes())
+        print("********%s%s" % (topo, g.number_of_nodes()))
 
     # Append weights
     if has_all_locs(g):
