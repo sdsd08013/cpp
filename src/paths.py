@@ -161,12 +161,12 @@ def grouped_shortest_pair(g, shortest_path, shortest_path_2):
     assert dst == shortest_path_2[-1]
 
     g3 = nx.Graph()
-    g3.add_path(shortest_path)
-    g3.add_path(shortest_path_2)
+    nx.add_path(g3, shortest_path)
+    nx.add_path(g3, shortest_path_2)
     # copy edges on path:
     for a, b in edges_on_path(shortest_path):
         g3[a][b]['weight'] = g[a][b]['weight']
-    g3.add_path(shortest_path_2)
+    nx.add_path(g3, shortest_path_2)
     for a, b in edges_on_path(shortest_path_2):
         g3[a][b]['weight'] = g[a][b]['weight']
     for a, b in interlacing_edges(shortest_path, shortest_path_2):

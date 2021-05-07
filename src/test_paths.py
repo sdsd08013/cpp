@@ -107,7 +107,7 @@ graph_fig_3_13_a = nx_graph_from_tuples([
 # author intended for the central path to have unit weights and the other
 # paths to have much larger weights.
 graph_fig_3_16_a = nx.Graph()
-graph_fig_3_16_a.add_path([i for i in 'AJKLMZIHGPNABCDEFZ'])
+nx.add_path(graph_fig_3_16_a, [i for i in 'AJKLMZIHGPNABCDEFZ'])
 edges_to_add = ['JC', 'KD', 'LE', 'LF', 'GD', 'EH', 'IF']
 for e in edges_to_add:
     graph_fig_3_16_a.add_edge(e[0], e[1])
@@ -224,7 +224,7 @@ class TestEdgeDisjointShortestPair(unittest.TestCase):
     def test_diamond(self):
         '''Simple diamond graph w/two equal paths.'''
         g = nx.Graph()
-        g.add_path(['A', 'B', 'Z', 'C', 'A'])
+        nx.add_path(g, ['A', 'B', 'Z', 'C', 'A'])
         set_unit_weights(g)
         paths = edge_disjoint_shortest_pair(g, 'A', 'Z')
         exp_paths = [['A', 'B', 'Z'], ['A', 'C', 'Z']]
@@ -263,7 +263,7 @@ class TestVertexDisjointShortestPair(unittest.TestCase):
     def test_diamond(self):
         '''Simple diamond graph w/two equal paths.'''
         g = nx.Graph()
-        g.add_path(['A', 'B', 'Z', 'C', 'A'])
+        nx.add_path(g, ['A', 'B', 'Z', 'C', 'A'])
         set_unit_weights(g)
         paths = vertex_disjoint_shortest_pair(g, 'A', 'Z')
         exp_paths = [['A', 'B', 'Z'], ['A', 'C', 'Z']]
