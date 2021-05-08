@@ -290,12 +290,6 @@ def connectivity_sssp(g, combo, apsp, apsp_paths, weighted, failed_links):
         closest_controllers = set([])
         closest_controller_dist = BIG
         for c in combo:
-            # print("==========c")
-            # print(c)
-            # print("==========apsp[n]")
-            # print(apsp[n])
-            # print("==========dict(apsp[n])[c]")
-            # print(dict(apsp[n])[c])
             dist = apsp[n][c]
             if dist < closest_controller_dist:
                 closest_controller_dist = dist
@@ -457,6 +451,9 @@ def process_result(metrics, median, write_combos, write_dist, combo, values, poi
     json_entry = {}  # For writing to distribution
     json_entry['id'] = point_id
     point_id += 1
+    # metrics=['latency', 'wc_latency']
+    print("==============values")
+    print(values)
     for metric in metrics:
         this_metric = metric_data[metric]
         metric_value, duration = values[metric]
@@ -512,15 +509,18 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     '''
     metric_data = init_metric_data(metrics, median)
     distribution = init_distribution()
+    # NOTE: combinationsでcombo_sizeに応じたノードの組み合わせリストを取得する
     for combo in combinations(g_g.nodes(), combo_size):
         if (point_id % processes) == process_index:
             values = {}
             for metric in g_metrics:
                 start_time = time.time()
+                # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
                 metric_value = METRIC_FCNS[metric](g_g, combo, g_apsp, g_apsp_paths,
                                                    g_weighted, g_extra_params)
                 duration = time.time() - start_time
                 values[metric] = (metric_value, duration)
+            # NOTE: valuesにlatency,wc_latencyの結果が含まれる
             process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
         point_id += 1
     return [metric_data, distribution]
@@ -629,11 +629,16 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
                 results_async.append(result_async)
                 # handle_combos returns a [metric_data, distribution] result.
 
+
             # Wait for results from each thread)
             print("collecting and merging results")
             results = []
             for r in results_async:
                 metric_data_in, distribution_in = r.get()
+                # print("==========metric_data_in")
+                # print(metric_data_in)
+                # print("==========distribution_in")
+                # print(distribution_in)
                 assert r.successful()
                 merge_metric_data(metric_data, metric_data_in, metrics, median)
                 merge_distribution(distribution, distribution_in)
@@ -643,6 +648,8 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
             #results = pool.map(handle_combo, combinations(g.nodes(), combo_size),
             #                   chunksize)
             all_combos = combinations(g.nodes(), combo_size)
+            print("=========all_combos")
+            print(all_combos)
             done = False
             while not done:
                 #print "starting a dispatch round"
