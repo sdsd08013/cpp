@@ -412,8 +412,6 @@ def pareto(data, colors, axes, xscale, yscale,
 
     pd, datanames = pareto_data_raw(data, x_metric, y_metric, normalize)
 
-    print("=======pd")
-    print(pd)
     lines = []
     for i, k in enumerate(sorted(data.keys())):
         pareto = pd[i]

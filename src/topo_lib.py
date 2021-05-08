@@ -176,10 +176,14 @@ def missing_locs_are_external(g):
 
 
 def remove_external_nodes(g):
+    new_g = nx.Graph()
     for n in g.nodes():
-        if not node_is_internal(g, n):
-            print("removing node %s: %s" % (n, g.nodes[n]))
-            g.remove_node(n)
+        if node_is_internal(g, n):
+            new_g.add_node(n)
+        # if not node_is_internal(g, n):
+        #     print("removing node %s: %s" % (n, g.nodes[n]))
+        #     g.remove_node(n)
+    return new_g
 
 
 def attach_weights(g):
@@ -229,8 +233,10 @@ def import_zoo_graph(topo):
 
     # Ignore old graphs
     if old_version(topo):
+        print("OLD_VERSION")
         return None, False, "Old version"
     if blacklisted(topo):
+        print("BLACKLIST")
         return None, False, "Blacklisted topology"
 
     # Convert multigraphs to regular graphs; multiple edges don't affect
@@ -260,8 +266,10 @@ def import_zoo_graph(topo):
 
     if not has_a_location(g):
         if known_no_loc(topo):
+            print("KNOWN_NO_LOC")
             return None, False, "Known no-weight topo"
         else:
+            print("ELSE")
             return None, False, "Unknown no-weight topo"
 
     if g.number_of_nodes() <= 9:
@@ -273,9 +281,9 @@ def import_zoo_graph(topo):
         #print "dist between %s and %s is %s" % (src, dst, g[src][dst]["weight"])    
         return g, True, None
     elif missing_locs_are_external(g):
-        remove_external_nodes(g)
-        attach_weights(g)
-        return g, True, "OK - removed external nodes"
+        new_g = remove_external_nodes(g)
+        attach_weights(new_g)
+        return new_g, True, "OK - removed external nodes"
     elif missing_locs_are_hyperedges(g):
         return g, False, "OK - missing locs are only hyperedges"
     elif missing_locs_are_external_or_hyperedges(g):

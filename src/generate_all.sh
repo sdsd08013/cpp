@@ -20,5 +20,5 @@ for C in ${CS}
 do
   echo "writing all for num controllers ${C}"
   echo "*********************"
-  python3 ./generate.py ${TOPOS} --from_start ${C} --lat_metrics -w --write_dist --write_combos -w -e ${EXT} ${FORCE} ${MP} ${OPS} ${MAX}
+  python3 ./generate.py ${TOPO} --from_start ${C} --lat_metrics -w --write_dist --write_combos -w -e ${EXT} ${FORCE} ${MP} ${OPS} ${MAX}
 done

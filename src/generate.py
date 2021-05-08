@@ -88,8 +88,6 @@ if __name__ == "__main__":
             ignored.append(topo)
             print("no weights for %s, skipping" % topo)
         else:
-            print("=========topo")
-            print(topo)
             do_all(topo, g, 1, 1, None)
             successes.append(topo)
 

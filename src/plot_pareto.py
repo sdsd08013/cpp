@@ -15,10 +15,9 @@ def do_pareto(options, stats, write_filepath):
     for i, g in enumerate(stats['group']):
         if options.max and i >= options.max:
             break
+        #print("=========stats['data'][g]")
+        #print(stats['data'][g])
         data[g] = [d for d in stats['data'][g]["distribution"]]
-
-    print("data")
-    print(data)
 
     print("plotting point pareto")
     if not write_filepath:
