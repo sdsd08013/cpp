@@ -511,6 +511,11 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     metric_data = init_metric_data(metrics, median)
     distribution = init_distribution()
     # NOTE: combinationsでcombo_sizeに応じたノードの組み合わせリストを取得する
+    print("=============combination start!!!!!!!")
+    print(len(list(combinations(g_g.nodes(), combo_size))))
+    print(g_metrics)
+    print("==========end!!!!!!!!!!")
+    # combinations.size*metrics.size*nodes.size*num_controllers.size
     for combo in combinations(g_g.nodes(), combo_size):
         if (point_id % processes) == process_index:
             values = {}
@@ -569,7 +574,7 @@ def merge_distribution(distribution, distribution_in):
     distribution += distribution_in
 
 
-def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
+def run_all_combos(metrics, g, num_controllers, data, apsp, apsp_paths,
                    weighted = False, write_dist = False, write_combos = False,
                    extra_params = None, processes = None, multiprocess = False,
                    chunksize = 1, median = False):
@@ -577,7 +582,7 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
 
     @param metrics: metrics to compute: in ['latency', 'fairness']
     @param g: NetworkX graph
-    @param controllers: list of numbers of controllers to analyze.
+    @param num_controllers: list of numbers of controllers to analyze.
     @param data: JSON data to be augmented.
     @param apsp: all-pairs shortest paths data
     @param apsp_paths: all-pairs shortest paths path data
@@ -612,10 +617,10 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
     point_id = 0  # Unique index for every distribution point written out.
     data['data'] = {}  # Where all data point & aggregates are stored.
     print("==============controllres")
-    print(controllers)
+    print(num_controllers)
     print("==============sorted(controllres)")
-    print(sorted(controllers))
-    for combo_size in sorted(controllers):
+    print(sorted(num_controllers))
+    for combo_size in sorted(num_controllers):
         # compute best location(s) for i controllers.
 
         print("** combo size: %s" % combo_size)
@@ -731,7 +736,7 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
         group_data['distribution'] = distribution
 
     data['metric'] = metrics
-    data['group'] = [str(c) for c in controllers]
+    data['group'] = [str(c) for c in num_controllers]
 
     # Pool cleanup.  According to the Multiprocessing module docs,
     # this shouldn't be necessary due to automatic GC, but without this
