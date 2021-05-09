@@ -77,7 +77,7 @@ def closest_controllers_2(g, controllers, apsp):
         closest_controllers_2[n] = closest_controller_2
     return closest_controllers_2
 
-
+# 各スイッチごとに最も近いコントローラまでの距離の和をとる
 def get_total_path_len(g, controllers, apsp, weighted = False):
     '''Returns the total of path lengths from nodes to nearest controllers.
 
@@ -378,6 +378,9 @@ def get_null(g, combo, apsp, apsp_paths, weighted, extra_params):
     return 0.0
 
 def get_latency(g, combo, apsp, apsp_paths, weighted, extra_params):
+    '''
+    @param combo: list of controller locations
+    '''
     return get_total_path_len(g, combo, apsp, weighted) / float(g.number_of_nodes())
 
 def get_latency_2(g, combo, apsp, apsp_paths, weighted, extra_params):
@@ -452,8 +455,6 @@ def process_result(metrics, median, write_combos, write_dist, combo, values, poi
     json_entry['id'] = point_id
     point_id += 1
     # metrics=['latency', 'wc_latency']
-    print("==============values")
-    print(values)
     for metric in metrics:
         this_metric = metric_data[metric]
         metric_value, duration = values[metric]
@@ -610,6 +611,10 @@ def run_all_combos(metrics, g, controllers, data, apsp, apsp_paths,
 
     point_id = 0  # Unique index for every distribution point written out.
     data['data'] = {}  # Where all data point & aggregates are stored.
+    print("==============controllres")
+    print(controllers)
+    print("==============sorted(controllres)")
+    print(sorted(controllers))
     for combo_size in sorted(controllers):
         # compute best location(s) for i controllers.
 

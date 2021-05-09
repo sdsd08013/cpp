@@ -68,6 +68,8 @@ def get_extra_params(g):
 def do_metrics(options, topo, g):
     '''Compute the metrics for a single topology.'''
 
+    print("==========options")
+    print(options)
     print("computing metricss for topo: %s" % topo)
     controllers = get_controllers(g, options)
     filename = get_filename(topo, options, controllers)
