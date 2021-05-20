@@ -8,6 +8,7 @@ import time
 
 import numpy
 import networkx as nx
+import random
 
 from itertools_recipes import random_combination, choose
 from util import sort_by_val
@@ -456,6 +457,8 @@ def process_result(metrics, median, write_combos, write_dist, combo, values, poi
     point_id += 1
     # metrics=['latency', 'wc_latency']
     for metric in metrics:
+        print("++++++++++++++++metric")
+        print(metric)
         this_metric = metric_data[metric]
         metric_value, duration = values[metric]
         this_metric['duration'] += duration
@@ -500,6 +503,21 @@ def handle_combos(combos, metrics, median, write_combos, write_dist, point_id):
         point_id += 1
     return [metric_data, distribution]
 
+def init_random_select_controller(nodes, num_controller, sample_len):
+    l = list()
+    n = 0
+    while n < sample_len:
+        r = random.sample(nodes, num_controller)
+        if r not in l:
+            l.append(tuple(r))
+            n+=1
+    '''
+    return list of set of controller place
+    list of set should be unique
+    '''
+    print("random.sample(nodes, n)")
+    print(l)
+    return l
 
 def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_params, process_index, processes, combo_size, metrics, median, write_combos, write_dist, point_id):
     '''Handle processing for an even fraction of all combinations.
@@ -512,11 +530,22 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     distribution = init_distribution()
     # NOTE: combinationsでcombo_sizeに応じたノードの組み合わせリストを取得する
     print("=============combination start!!!!!!!")
-    print(len(list(combinations(g_g.nodes(), combo_size))))
-    print(g_metrics)
+    print(combo_size)
+    print(metric_data)
     print("==========end!!!!!!!!!!")
+    # TODO: 
+    # step1 ランダムに組み合わせの数を決定する
+    # def random_select_controller を定義し適当な回数生成を繰り返す
+    # step2 step1の結果から結果の良かったもの5個を選択する
+    # step3 それぞれの結果を評価し精度の高いもの2つを残し子孫を生成する
+    # def evaluate
+    # def random_generate_children
     # combinations.size*metrics.size*nodes.size*num_controllers.size
-    for combo in combinations(g_g.nodes(), combo_size):
+    # 200000*2*47*5
+    # 5個コントローラが存在する場合,貪欲法では計算量的に全ての組み合わせを試すことができない
+    for combo in init_random_select_controller(g_g.nodes(), combo_size, 10):
+        print("==================COMBO")
+        print(combo.__class__)
         if (point_id % processes) == process_index:
             values = {}
             for metric in g_metrics:
@@ -529,6 +558,26 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
             # NOTE: valuesにlatency,wc_latencyの結果が含まれる
             process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
         point_id += 1
+
+    # for combo in combinations(g_g.nodes(), combo_size):
+    #     print("==================COMBO")
+    #     print(combo.__class__)
+    #     if (point_id % processes) == process_index:
+    #         values = {}
+    #         for metric in g_metrics:
+    #             start_time = time.time()
+    #             # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
+    #             metric_value = METRIC_FCNS[metric](g_g, combo, g_apsp, g_apsp_paths,
+    #                                                g_weighted, g_extra_params)
+    #             duration = time.time() - start_time
+    #             values[metric] = (metric_value, duration)
+    #         # NOTE: valuesにlatency,wc_latencyの結果が含まれる
+    #         process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
+    #     point_id += 1
+    print("===========metric_data")
+    print(metric_data)
+    # print("===========distribution")
+    # print(distribution)
     return [metric_data, distribution]
 
 

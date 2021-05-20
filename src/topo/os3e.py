@@ -5,7 +5,7 @@ Info: at http://www.internet2.edu/network/ose
 
 Graph source: http://www.internet2.edu/pubs/OS3Emap.pdf
 
-34 nodes, 41 edges
+34 nodes, 42 edges
 
 May not be 100% accurate: 
     Vancouver, Miami are dashed links
