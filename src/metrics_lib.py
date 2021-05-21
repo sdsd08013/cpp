@@ -457,8 +457,6 @@ def process_result(metrics, median, write_combos, write_dist, combo, values, poi
     point_id += 1
     # metrics=['latency', 'wc_latency']
     for metric in metrics:
-        print("++++++++++++++++metric")
-        print(metric)
         this_metric = metric_data[metric]
         metric_value, duration = values[metric]
         this_metric['duration'] += duration
@@ -504,6 +502,10 @@ def handle_combos(combos, metrics, median, write_combos, write_dist, point_id):
     return [metric_data, distribution]
 
 def init_random_select_controller(nodes, num_controller, sample_len):
+    '''
+    return list of set of controller place
+    list of set should be unique
+    '''
     l = list()
     n = 0
     while n < sample_len:
@@ -511,14 +513,101 @@ def init_random_select_controller(nodes, num_controller, sample_len):
         if r not in l:
             l.append(tuple(r))
             n+=1
-    '''
-    return list of set of controller place
-    list of set should be unique
-    '''
-    print("random.sample(nodes, n)")
-    print(l)
     return l
 
+
+def select(combo_values, combo_size):
+    CHILD_NUM = 5
+    l = list()
+    n = 0
+    sortv = sorted(combo_values, key=lambda combo_value:combo_value[1]['latency'][0])
+    # print("===============sorted")
+    # print(len(sortv))
+    # print(sortv)
+    # print("========combo_size")
+    # print(combo_size)
+
+    while n < CHILD_NUM:
+        l.append(sortv[n][0])
+        n+=1
+
+    return l
+
+    # print("=============combo_values")
+    # print(combo_values)
+    # print("=============combo_values[0")
+    # print(combo_values[0][1]['latency'][0])
+    # print("===============sorted")
+    # print(sorted(combo_values, key=lambda combo_value:combo_value[1]['latency'][0])[0:4])
+    # return sorted(combo_values, key=lambda combo_value:combo_value[1]['latency'][0])[0:4]
+
+# 交配により子供をつくる
+def crossover(combos, nodes):
+    if len(combos[0]) < 2:
+        return
+    else:
+        MAX_CHILD_NUM = 5
+        par1 = combos[0]
+        par2 = combos[1]
+
+        children = list()
+
+        # 指定された数の子供をつくる
+        for n in range(MAX_CHILD_NUM):
+            child = list()
+            # par1とpar2の各要素のどちらかを選択し交配する
+            for l in range(len(par1)):
+                r = random.randint(0,5)
+                mutation = random.sample(tuple(filter(lambda node: node not in child, nodes)), 1)[0]
+                if r == 0:
+                    if par1[l] in child:
+                        child.append(par1[l])
+                    else:
+                        child.append(mutation)
+                elif r == 1:
+                    if par1[l] in child:
+                        child.append(par1[l])
+                    else:
+                        child.append(mutation)
+                elif r == 2:
+                    if par2[l] in child:
+                        child.append(par2[l])
+                    else:
+                        child.append(mutation)
+                elif r == 3:
+                    if par2[l] in child:
+                        child.append(par2[l])
+                    else:
+                        child.append(mutation)
+                else:
+                    child.append(mutation)
+                n+=1
+            children.append(child)
+    return combos + children
+    
+
+
+# def crossover():
+# def mutate():
+
+def evaluate(controllers_list, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics, metrics, median, write_combos, write_dist, point_id, distribution, metric_data, combo_values):
+    combo_values.clear()
+    for combo in controllers_list:
+        #if (point_id % processes) == process_index:
+        values = {}
+        for metric in g_metrics:
+            start_time = time.time()
+            # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
+            metric_value = METRIC_FCNS[metric](g_g, combo, g_apsp, g_apsp_paths,
+                                                g_weighted, g_extra_params)
+            duration = time.time() - start_time
+            values[metric] = (metric_value, duration)
+        # NOTE: valuesにlatency,wc_latencyの結果が含まれる
+        combo_values.append([combo, values])
+        process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
+
+
+     
 def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_params, process_index, processes, combo_size, metrics, median, write_combos, write_dist, point_id):
     '''Handle processing for an even fraction of all combinations.
 
@@ -543,21 +632,46 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     # combinations.size*metrics.size*nodes.size*num_controllers.size
     # 200000*2*47*5
     # 5個コントローラが存在する場合,貪欲法では計算量的に全ての組み合わせを試すことができない
-    for combo in init_random_select_controller(g_g.nodes(), combo_size, 10):
-        print("==================COMBO")
-        print(combo.__class__)
-        if (point_id % processes) == process_index:
-            values = {}
-            for metric in g_metrics:
-                start_time = time.time()
-                # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
-                metric_value = METRIC_FCNS[metric](g_g, combo, g_apsp, g_apsp_paths,
-                                                   g_weighted, g_extra_params)
-                duration = time.time() - start_time
-                values[metric] = (metric_value, duration)
-            # NOTE: valuesにlatency,wc_latencyの結果が含まれる
-            process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
-        point_id += 1
+    combo_values = list()
+    evaluate(
+        init_random_select_controller(g_g.nodes(), combo_size, 10),
+        g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
+        g_metrics, metrics, median, write_combos, write_dist, 
+        point_id, distribution, metric_data, combo_values
+    )
+
+    if combo_size > 1:
+        for n in range(100):
+            selection = select(combo_values, combo_size)
+            evaluate(
+                crossover(selection, g_g.nodes()),
+                g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
+                g_metrics, metrics, median, write_combos, write_dist, 
+                point_id, distribution, metric_data, combo_values
+            )
+            # print(f"=============combo_values{n}")
+            # print(combo_values)
+
+
+    # for combo in init_random_select_controller(g_g.nodes(), combo_size, 10):
+    #     #if (point_id % processes) == process_index:
+    #     values = {}
+    #     for metric in g_metrics:
+    #         start_time = time.time()
+    #         # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
+    #         metric_value = METRIC_FCNS[metric](g_g, combo, g_apsp, g_apsp_paths,
+    #                                             g_weighted, g_extra_params)
+    #         duration = time.time() - start_time
+    #         values[metric] = (metric_value, duration)
+    #     # NOTE: valuesにlatency,wc_latencyの結果が含まれる
+    #     combo_values.append([combo, values])
+    #     process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
+    #     #point_id += 1
+
+    # print(crossover(select(combo_values, combo_size), g_g.nodes()))
+    # TODO: step1: 新たに組み合わせをつくる
+    # TODO: setp2: その組み合わせで↑のloopを回す
+    # TODO: step3: selectする
 
     # for combo in combinations(g_g.nodes(), combo_size):
     #     print("==================COMBO")
@@ -574,10 +688,10 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     #         # NOTE: valuesにlatency,wc_latencyの結果が含まれる
     #         process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
     #     point_id += 1
-    print("===========metric_data")
-    print(metric_data)
     # print("===========distribution")
     # print(distribution)
+    # print("==========[metric_data, dist]")
+    # print([metric_data, distribution])
     return [metric_data, distribution]
 
 
