@@ -20,8 +20,6 @@ if __name__ == "__main__":
 
     global options
     options = plot.parse_args()
-    print("========options")
-    print(options)
 
     def do_all(name, g, i, t, data):
         global options
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         if 'cdfs' in options.operations:
             plot_cdfs.do_cdfs(options, stats, filename)
         if 'ranges' in options.operations:
-            plot_ranges.do_ranges(options, stats, filename)
+            plot_ranges.do_ranges(options, stats, filename, 'os3e')
         if 'pareto' in options.operations:
             plot_pareto.do_pareto(options, stats, filename)
         if 'cloud' in options.operations:

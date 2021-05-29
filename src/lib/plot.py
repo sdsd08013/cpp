@@ -4,6 +4,7 @@ import errno
 import os
 import json
 from operator import itemgetter
+from lib.dist import MILES_TO_MS, LATENCY_LINES
 
 # See http://matplotlib.sourceforge.net/users/customizing.html
 
@@ -415,10 +416,13 @@ def pareto(data, colors, axes, xscale, yscale,
     lines = []
     for i, k in enumerate(sorted(data.keys())):
         pareto = pd[i]
-        x = [d[0] for d in pareto]
-        y = [d[1] for d in pareto]
+        x = [d[0]*MILES_TO_MS for d in pareto]
+        y = [d[1]*MILES_TO_MS for d in pareto]
+        print("=========")
+        print(x)
+        print(y)
         color = colors[i]
-        lines.append(pylab.plot(x, y, 'o-',
+        lines.append(pylab.plot(x, y, 'x-',
                                 color = color,
                                 markerfacecolor = color,
                                 markeredgecolor = color,
@@ -429,8 +433,8 @@ def pareto(data, colors, axes, xscale, yscale,
                       'markeredgecolor': color,
                       'markeredgewidth': 2}
             # O to mark X metric optimal, X for Y metric optimal
-            pylab.plot(x[0], y[0], 'o', markersize = 10, **kwargs)
-            pylab.plot(x[-1], y[-1], 'x', markersize = 10, **kwargs)
+            pylab.plot(x[0], y[0], 'x', markersize = 4, **kwargs)
+            pylab.plot(x[-1], y[-1], 'x', markersize = 4, **kwargs)
 
     pylab.xscale(xscale)
     pylab.yscale(yscale)

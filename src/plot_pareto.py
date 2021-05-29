@@ -15,14 +15,13 @@ def do_pareto(options, stats, write_filepath):
     for i, g in enumerate(stats['group']):
         if options.max and i >= options.max:
             break
-        #print("=========stats['data'][g]")
-        #print(stats['data'][g])
         data[g] = [d for d in stats['data'][g]["distribution"]]
 
     print("plotting point pareto")
     if not write_filepath:
         write_filepath = get_output_filepath(options.input)
     write_filepath += '_pareto_' + ','.join(options.metrics)
+
     plot.pareto(data, COLORS, None,
                "linear", "linear", write_filepath,
                options.write,
@@ -45,6 +44,21 @@ def do_pareto(options, stats, write_filepath):
                x_metric = x_metric,
                y_metric = y_metric,
                loc = "lower right")
+
+    plot.pareto(data, COLORS, None,
+               "linear", "linear", write_filepath + '_zoom2',
+               options.write,
+               xlabel = metric_fullname(x_metric) + ' (ms)',
+               ylabel = metric_fullname(y_metric) + ' (ms)',
+               ext = options.ext,
+               max_y = 20,
+               max_x = 10,
+               min_x = 0,
+               min_y = 0,
+               x_metric = x_metric,
+               y_metric = y_metric,
+               loc = "lower right")
+
 
     plot.pareto(data, COLORS, None,
                "linear", "linear", write_filepath + '_norm',

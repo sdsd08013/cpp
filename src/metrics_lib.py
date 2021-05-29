@@ -9,6 +9,7 @@ import time
 import numpy
 import networkx as nx
 import random
+import math
 
 from itertools_recipes import random_combination, choose
 from util import sort_by_val
@@ -501,45 +502,39 @@ def handle_combos(combos, metrics, median, write_combos, write_dist, point_id):
         point_id += 1
     return [metric_data, distribution]
 
-def init_random_select_controller(nodes, num_controller, sample_len):
+def init_random_select_controller(nodes, num_controller):
+    '''
+    return set of controller place
+    '''
+    r = random.sample(nodes, num_controller)
+    return tuple(r)
+
+
+def init_random_select_controller_list(nodes, num_controller, trial_num):
     '''
     return list of set of controller place
     list of set should be unique
     '''
     l = list()
     n = 0
-    while n < sample_len:
+    while n < trial_num:
         r = random.sample(nodes, num_controller)
         if r not in l:
             l.append(tuple(r))
             n+=1
     return l
 
-
 def select(combo_values, combo_size):
     CHILD_NUM = 5
     l = list()
     n = 0
     sortv = sorted(combo_values, key=lambda combo_value:combo_value[1]['latency'][0])
-    # print("===============sorted")
-    # print(len(sortv))
-    # print(sortv)
-    # print("========combo_size")
-    # print(combo_size)
 
     while n < CHILD_NUM:
         l.append(sortv[n][0])
         n+=1
 
     return l
-
-    # print("=============combo_values")
-    # print(combo_values)
-    # print("=============combo_values[0")
-    # print(combo_values[0][1]['latency'][0])
-    # print("===============sorted")
-    # print(sorted(combo_values, key=lambda combo_value:combo_value[1]['latency'][0])[0:4])
-    # return sorted(combo_values, key=lambda combo_value:combo_value[1]['latency'][0])[0:4]
 
 # 交配により子供をつくる
 def crossover(combos, nodes):
@@ -585,11 +580,6 @@ def crossover(combos, nodes):
             children.append(child)
     return combos + children
     
-
-
-# def crossover():
-# def mutate():
-
 def evaluate(controllers_list, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics, metrics, median, write_combos, write_dist, point_id, distribution, metric_data, combo_values):
     combo_values.clear()
     for combo in controllers_list:
@@ -606,6 +596,36 @@ def evaluate(controllers_list, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_pa
         combo_values.append([combo, values])
         process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
 
+def simmulated_annealing(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics, metrics, median, write_combos, write_dist, point_id, distribution, metric_data, combo_values):
+    # https://ja.wikipedia.org/wiki/%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97%E6%B3%95#:~:text=%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97%E6%B3%95%EF%BC%88%E3%82%84%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97,%E3%81%A6%E3%80%81%E3%82%88%E3%81%84%E8%BF%91%E4%BC%BC%E3%82%92%E4%B8%8E%E3%81%88%E3%82%8B%E3%80%82
+    # 1.初期状態を設定, -> init_controllers_list
+    # 初期状態はランダムにコントローラを配置して各スイッチを最も近いコントローラに紐付ける
+    # 2. 温度パラメータTを初期化する t = 1000
+    print("============init_con")
+    print(init_controllers)
+    # ランダムにコントローラを1つ選択しグラフ上もっとも近いものと交換しそれを近傍とする
+    #for neighbor in list(g_g.neighbors(random.choice(init_controllers_list))):
+
+    replace_target_controller = random.choice(init_controllers)
+    # ランダムに選ばれたコントローラの近傍のコントローラ
+    list(g_g.neighbors(replace_target_controller))
+    # ランダムに選ばれたコントローラから全コントローラまでの最短距離
+    # 距離が短い順にコントローラを選ぶ、init_controllersに含まれる場合はスキップする
+    for new_controller in nx.single_source_shortest_path_length(g_g, replace_target_controller):
+        if(new_controller in init_controllers):
+            print("")
+        else:
+            new_controllers = list(init_controllers)[init_controllers.index(replace_target_controller)] = new_controller
+            break
+
+    print("============new_controllers")
+    print(new_controllers)
+
+    # t = 1000
+    # math.pow(math.e,1)
+    # 3.初期状態の近傍の組み合わせ(解=y)による受理確率を求める
+    # 4.Pr = if(f(y)-f(x)<0) f(y)-f(x)/T else 1
+    # 5.遷移確きランダムに状態を遷移する、すなわちrand < Pr であれば状態を変更
 
      
 def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_params, process_index, processes, combo_size, metrics, median, write_combos, write_dist, point_id):
@@ -617,11 +637,21 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     '''
     metric_data = init_metric_data(metrics, median)
     distribution = init_distribution()
+
+    combo_values = list()
+    # simmulated_annealing
+    simmulated_annealing(
+        init_random_select_controller(g_g.nodes(), combo_size),
+        g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
+        g_metrics, metrics, median, write_combos, write_dist, 
+        point_id, distribution, metric_data, combo_values
+    )
+
     # NOTE: combinationsでcombo_sizeに応じたノードの組み合わせリストを取得する
-    print("=============combination start!!!!!!!")
-    print(combo_size)
-    print(metric_data)
-    print("==========end!!!!!!!!!!")
+    # print("=============combination start!!!!!!!")
+    # print(combo_size)
+    # print(metric_data)
+    # print("==========end!!!!!!!!!!")
     # TODO: 
     # step1 ランダムに組み合わせの数を決定する
     # def random_select_controller を定義し適当な回数生成を繰り返す
@@ -632,41 +662,26 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     # combinations.size*metrics.size*nodes.size*num_controllers.size
     # 200000*2*47*5
     # 5個コントローラが存在する場合,貪欲法では計算量的に全ての組み合わせを試すことができない
-    combo_values = list()
-    evaluate(
-        init_random_select_controller(g_g.nodes(), combo_size, 10),
-        g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
-        g_metrics, metrics, median, write_combos, write_dist, 
-        point_id, distribution, metric_data, combo_values
-    )
+    # combo_values = list()
+    # evaluate(
+    #     init_random_select_controller_list(g_g.nodes(), combo_size, 10),
+    #     g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
+    #     g_metrics, metrics, median, write_combos, write_dist, 
+    #     point_id, distribution, metric_data, combo_values
+    # )
 
-    if combo_size > 1:
-        for n in range(100):
-            selection = select(combo_values, combo_size)
-            evaluate(
-                crossover(selection, g_g.nodes()),
-                g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
-                g_metrics, metrics, median, write_combos, write_dist, 
-                point_id, distribution, metric_data, combo_values
-            )
-            # print(f"=============combo_values{n}")
-            # print(combo_values)
+    # if combo_size > 1:
+    #     for n in range(100):
+    #         selection = select(combo_values, combo_size)
+    #         evaluate(
+    #             crossover(selection, g_g.nodes()),
+    #             g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, 
+    #             g_metrics, metrics, median, write_combos, write_dist, 
+    #             point_id, distribution, metric_data, combo_values
+    #         )
+    #         # print(f"=============combo_values{n}")
+    #         # print(combo_values)
 
-
-    # for combo in init_random_select_controller(g_g.nodes(), combo_size, 10):
-    #     #if (point_id % processes) == process_index:
-    #     values = {}
-    #     for metric in g_metrics:
-    #         start_time = time.time()
-    #         # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
-    #         metric_value = METRIC_FCNS[metric](g_g, combo, g_apsp, g_apsp_paths,
-    #                                             g_weighted, g_extra_params)
-    #         duration = time.time() - start_time
-    #         values[metric] = (metric_value, duration)
-    #     # NOTE: valuesにlatency,wc_latencyの結果が含まれる
-    #     combo_values.append([combo, values])
-    #     process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
-    #     #point_id += 1
 
     # print(crossover(select(combo_values, combo_size), g_g.nodes()))
     # TODO: step1: 新たに組み合わせをつくる
@@ -674,8 +689,6 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     # TODO: step3: selectする
 
     # for combo in combinations(g_g.nodes(), combo_size):
-    #     print("==================COMBO")
-    #     print(combo.__class__)
     #     if (point_id % processes) == process_index:
     #         values = {}
     #         for metric in g_metrics:
@@ -688,10 +701,6 @@ def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_
     #         # NOTE: valuesにlatency,wc_latencyの結果が含まれる
     #         process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
     #     point_id += 1
-    # print("===========distribution")
-    # print(distribution)
-    # print("==========[metric_data, dist]")
-    # print([metric_data, distribution])
     return [metric_data, distribution]
 
 
