@@ -66,8 +66,6 @@ def parse_args():
     opts.add_option("--gen_1ctrl_table",action = "store_true",
                     default = False, help = "generate LaTeX one-ctrl table?")
 
-    print("choices")
-    print(METRICS)
     # Metric selection
     opts.add_option("--metric",
                     default = None,

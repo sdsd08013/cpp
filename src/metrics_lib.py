@@ -596,13 +596,23 @@ def evaluate(controllers_list, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_pa
         combo_values.append([combo, values])
         process_result(metrics, median, write_combos, write_dist, combo, values, point_id, distribution, metric_data)
 
+def metric_values(controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics):
+    values = {}
+    for metric in g_metrics:
+        start_time = time.time()
+        # NOTE: 処理の実体はここ、metrics_libで定義されているget_latencyメソッドなどを呼び出す
+        metric_value = METRIC_FCNS[metric](g_g, controllers, g_apsp, g_apsp_paths,
+                                            g_weighted, g_extra_params)
+        duration = time.time() - start_time
+        values[metric] = (metric_value, duration)
+
+    return values
+
 def simmulated_annealing(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics, metrics, median, write_combos, write_dist, point_id, distribution, metric_data, combo_values):
     # https://ja.wikipedia.org/wiki/%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97%E6%B3%95#:~:text=%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97%E6%B3%95%EF%BC%88%E3%82%84%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97,%E3%81%A6%E3%80%81%E3%82%88%E3%81%84%E8%BF%91%E4%BC%BC%E3%82%92%E4%B8%8E%E3%81%88%E3%82%8B%E3%80%82
     # 1.初期状態を設定, -> init_controllers_list
     # 初期状態はランダムにコントローラを配置して各スイッチを最も近いコントローラに紐付ける
     # 2. 温度パラメータTを初期化する t = 1000
-    print("============init_con")
-    print(init_controllers)
     # ランダムにコントローラを1つ選択しグラフ上もっとも近いものと交換しそれを近傍とする
     #for neighbor in list(g_g.neighbors(random.choice(init_controllers_list))):
 
@@ -615,11 +625,29 @@ def simmulated_annealing(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted
         if(new_controller in init_controllers):
             print("")
         else:
-            new_controllers = list(init_controllers)[init_controllers.index(replace_target_controller)] = new_controller
+            list_init_controllers = list(init_controllers)
+            list_init_controllers[list_init_controllers.index(replace_target_controller)] = new_controller
+            new_controllers = list(init_controllers)
             break
 
-    print("============new_controllers")
-    print(new_controllers)
+    init_values = metric_values(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics)
+    print("=============init_values")
+    print(init_values)
+
+    new_values = metric_values(new_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics)
+    print("=============new_values")
+    print(new_values)
+
+    # TODO: 前の配置でのvaluesと新しい配置でのvaluesを比較する
+    # TODO: combo_valuesにappendするのはsimmulated_annealingにより求めた最終的な近似解のみ
+    values = new_values
+    combo_values.append([new_controllers, new_values])
+    process_result(metrics, median, write_combos, write_dist, new_controllers, values, point_id, distribution, metric_data)
+
+
+    # ↑近傍のコントローラリスト
+
+    # initとnewのmetricを比較する
 
     # t = 1000
     # math.pow(math.e,1)
@@ -788,10 +816,6 @@ def run_all_combos(metrics, g, num_controllers, data, apsp, apsp_paths,
 
     point_id = 0  # Unique index for every distribution point written out.
     data['data'] = {}  # Where all data point & aggregates are stored.
-    print("==============controllres")
-    print(num_controllers)
-    print("==============sorted(controllres)")
-    print(sorted(num_controllers))
     for combo_size in sorted(num_controllers):
         # compute best location(s) for i controllers.
 
