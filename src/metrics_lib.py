@@ -606,7 +606,30 @@ def metric_values(controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_pa
         duration = time.time() - start_time
         values[metric] = (metric_value, duration)
 
+    # TODO: 多目的最適化の場合は他のmetricsとあわせて重み付して評価する
     return values
+
+def probability(temparature, prev_values, next_values):
+    if(prev_values > next_values):
+        return 1
+    else:
+        return (next_values - prev_values)/temparature
+
+def neighbor(g_g, current_controllers):
+    replace_target_controller = random.choice(current_controllers)
+
+    replaced_controllers = list()
+    for new_controller in nx.single_source_shortest_path_length(g_g, replace_target_controller):
+        if(new_controller in current_controllers):
+            print("")
+        else:
+            list_controllers = list(current_controllers)
+            list_controllers[list_controllers.index(replace_target_controller)] = new_controller
+            replaced_controllers = list_controllers
+            break
+
+    return replaced_controllers
+
 
 def simmulated_annealing(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics, metrics, median, write_combos, write_dist, point_id, distribution, metric_data, combo_values):
     # https://ja.wikipedia.org/wiki/%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97%E6%B3%95#:~:text=%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97%E6%B3%95%EF%BC%88%E3%82%84%E3%81%8D%E3%81%AA%E3%81%BE%E3%81%97,%E3%81%A6%E3%80%81%E3%82%88%E3%81%84%E8%BF%91%E4%BC%BC%E3%82%92%E4%B8%8E%E3%81%88%E3%82%8B%E3%80%82
@@ -621,41 +644,34 @@ def simmulated_annealing(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted
     list(g_g.neighbors(replace_target_controller))
     # ランダムに選ばれたコントローラから全コントローラまでの最短距離
     # 距離が短い順にコントローラを選ぶ、init_controllersに含まれる場合はスキップする
-    for new_controller in nx.single_source_shortest_path_length(g_g, replace_target_controller):
-        if(new_controller in init_controllers):
-            print("")
-        else:
-            list_init_controllers = list(init_controllers)
-            list_init_controllers[list_init_controllers.index(replace_target_controller)] = new_controller
-            new_controllers = list(init_controllers)
-            break
-
+    print(neighbor(g_g, init_controllers))
+    new_controllers = neighbor(g_g, init_controllers)
     init_values = metric_values(init_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics)
-    print("=============init_values")
-    print(init_values)
-
     new_values = metric_values(new_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics)
-    print("=============new_values")
-    print(new_values)
 
     # TODO: 前の配置でのvaluesと新しい配置でのvaluesを比較する
     # TODO: combo_valuesにappendするのはsimmulated_annealingにより求めた最終的な近似解のみ
-    values = new_values
-    combo_values.append([new_controllers, new_values])
-    process_result(metrics, median, write_combos, write_dist, new_controllers, values, point_id, distribution, metric_data)
+    t = 1000
 
+    current_controllers = init_controllers
+    current_values = init_values
+    best_controllers = init_controllers
+    best_values = init_values
 
-    # ↑近傍のコントローラリスト
+    for i in range(1000):
+        new_values = metric_values(current_controllers, g_g, g_apsp, g_apsp_paths, g_weighted, g_extra_params, g_metrics)
+        new_controllers = neighbor(g_g, current_controllers)
+        if (new_values['latency'][0] <= best_values['latency'][0]):
+            best_values = new_values
+            best_controllers = new_controllers
+        if (random.random() <= probability(math.pow(0.5, i/t), current_values['latency'][0], new_values['latency'][0])):
+            current_controllers = new_controllers
+            current_values = new_values
 
-    # initとnewのmetricを比較する
+    values = current_values
+    combo_values.append([current_controllers, current_values])
+    process_result(metrics, median, write_combos, write_dist, current_controllers, values, point_id, distribution, metric_data)
 
-    # t = 1000
-    # math.pow(math.e,1)
-    # 3.初期状態の近傍の組み合わせ(解=y)による受理確率を求める
-    # 4.Pr = if(f(y)-f(x)<0) f(y)-f(x)/T else 1
-    # 5.遷移確きランダムに状態を遷移する、すなわちrand < Pr であれば状態を変更
-
-     
 def handle_combos_all(g_g, g_metrics, g_apsp, g_apsp_paths, g_weighted, g_extra_params, process_index, processes, combo_size, metrics, median, write_combos, write_dist, point_id):
     '''Handle processing for an even fraction of all combinations.
 
